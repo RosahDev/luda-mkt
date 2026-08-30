@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const lightboxTitle = document.getElementById('lightboxTitle');
   const lightboxPrev = document.getElementById('lightboxPrev');
   const lightboxNext = document.getElementById('lightboxNext');
+  const lightboxDots = document.getElementById('lightboxDots');
   const closeLightboxBtn = document.querySelector('.lightbox-close');
   const leadForm = document.getElementById('lead-form');
   const formMessage = document.getElementById('form-message');
@@ -231,20 +232,49 @@ document.addEventListener('DOMContentLoaded', () => {
     const current = lightboxState.items[lightboxState.index];
     if (!current) return;
 
+    lightboxDots.querySelectorAll('button').forEach((dot, index) => {
+      dot.classList.toggle('active', index === lightboxState.index);
+      dot.setAttribute('aria-current', index === lightboxState.index ? 'true' : 'false');
+    });
+
     if (current.type === 'video') {
       lightboxImage.style.display = 'none';
       lightboxVideo.style.display = 'block';
       lightboxVideo.src = current.src;
-      lightboxVideo.play();
+      lightboxVideo.play().catch(() => {});
       lightboxTitle.textContent = current.title;
       return;
     }
 
     lightboxVideo.style.display = 'none';
     lightboxImage.style.display = 'block';
-    lightboxImage.src = current.src;
-    lightboxImage.alt = current.title;
-    lightboxTitle.textContent = current.title;
+    const nextImage = new Image();
+    nextImage.src = current.src;
+    nextImage.onload = () => {
+      lightboxImage.src = current.src;
+      lightboxImage.alt = current.title;
+      lightboxImage.classList.remove('is-changing');
+      lightboxTitle.textContent = current.title;
+    };
+  }
+
+  function preloadGallery(items) {
+    items.filter((item) => item.type !== 'video').forEach((item) => {
+      const image = new Image();
+      image.src = item.src;
+    });
+  }
+
+  function renderLightboxDots() {
+    lightboxDots.innerHTML = lightboxState.items.map((item, index) => `
+      <button type="button" class="lightbox-dot${index === lightboxState.index ? ' active' : ''}" data-index="${index}" aria-label="Ir para mídia ${index + 1}" aria-current="${index === lightboxState.index ? 'true' : 'false'}"></button>
+    `).join('');
+    lightboxDots.querySelectorAll('.lightbox-dot').forEach((dot) => {
+      dot.addEventListener('click', () => {
+        lightboxState.index = Number(dot.dataset.index);
+        updateLightboxContent();
+      });
+    });
   }
 
   function openLightbox(item) {
@@ -269,6 +299,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     lightboxState.items = galleryItems;
     lightboxState.index = 0;
+    renderLightboxDots();
+    preloadGallery(galleryItems);
     updateLightboxContent();
     lightbox.classList.add('active');
     lightbox.setAttribute('aria-hidden', 'false');
