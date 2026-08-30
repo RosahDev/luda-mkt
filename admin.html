@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin LUDA Marketing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <div class="admin-card" id="loginScreen">
+        <div class="login-card">
+          <p class="eyebrow">Acesso restrito</p>
+          <h2 style="margin-bottom:1rem;">Login do administrador</h2>
+          <form id="loginForm" class="form-stack">
+            <label>
+              <span>E-mail</span>
+              <input type="email" id="adminEmail" placeholder="admin@ludamarketing.com.br" required />
+            </label>
+
+            <label>
+              <span>Senha</span>
+              <input type="password" id="adminPassword" placeholder="••••••••" required />
+            </label>
+
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <p id="loginMessage" class="form-message" aria-live="polite"></p>
+          </form>
+        </div>
+      </div>
+
+      <div class="admin-card hidden" id="adminScreen">
+        <div class="admin-header">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h2>Gerenciar portfólio</h2>
+          </div>
+          <button id="logoutBtn" class="btn btn-secondary" type="button">Sair</button>
+        </div>
+
+        <div class="admin-grid">
+          <section class="admin-panel">
+            <h3>Itens cadastrados</h3>
+            <ul id="portfolioList" class="admin-list"></ul>
+          </section>
+
+          <section class="admin-form">
+            <h3>Novo trabalho</h3>
+            <form id="adminPortfolioForm" class="form-stack">
+              <label>
+                <span>Título</span>
+                <input type="text" name="title" required />
+              </label>
+
+              <label>
+                <span>Categoria</span>
+                <select name="category" required>
+                  <option value="eventos">Eventos</option>
+                  <option value="automotivo">Automotivo</option>
+                  <option value="celebracoes">Celebrações</option>
+                  <option value="social">Redes</option>
+                </select>
+              </label>
+
+              <label>
+                <span>Tipo de mídia</span>
+                <select name="media_type">
+                  <option value="image">Foto</option>
+                  <option value="video">Vídeo</option>
+                </select>
+              </label>
+
+              <div class="media-upload-field">
+                <span>Arquivos de mídia</span>
+                <label class="media-dropzone" id="mediaDropzone" for="mediaFiles">
+                  <strong>Arraste os arquivos aqui</strong>
+                  <small>ou clique para selecionar fotos e vídeos</small>
+                  <input type="file" id="mediaFiles" accept="image/*,video/*" multiple />
+                </label>
+                <div class="media-preview-list" id="mediaPreviewList" aria-live="polite"></div>
+              </div>
+
+              <label>
+                <span>Descrição</span>
+                <textarea name="description" rows="4" placeholder="Descrição do projeto..."></textarea>
+              </label>
+
+              <button type="submit" class="btn btn-primary">Salvar item</button>
+              <p id="adminMessage" class="form-message" aria-live="polite"></p>
+            </form>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabaseClient.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>

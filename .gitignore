@@ -1,0 +1,20 @@
+# Local secrets and Supabase state
+.env
+.env.*
+!.env.example
+.supabase/
+supabase/.temp/
+
+# Operating system and editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/settings.json
+
+# Dependencies and build output
+node_modules/
+dist/
+build/
+
+# Local logs
+*.log
