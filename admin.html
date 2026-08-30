@@ -83,6 +83,16 @@
                 <div class="media-preview-list" id="mediaPreviewList" aria-live="polite"></div>
               </div>
 
+              <div class="media-upload-field hidden" id="videoCoverField">
+                <span>Capa personalizada do vídeo</span>
+                <label class="media-dropzone media-cover-dropzone" for="videoCoverFile">
+                  <strong>Selecione uma imagem de capa</strong>
+                  <small>JPG, PNG ou WebP</small>
+                  <input type="file" id="videoCoverFile" accept="image/*" />
+                </label>
+                <div class="cover-preview" id="videoCoverPreview"></div>
+              </div>
+
               <label>
                 <span>Descrição</span>
                 <textarea name="description" rows="4" placeholder="Descrição do projeto..."></textarea>

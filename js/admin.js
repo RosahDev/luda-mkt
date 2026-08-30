@@ -10,7 +10,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const mediaFilesInput = document.getElementById('mediaFiles');
   const mediaDropzone = document.getElementById('mediaDropzone');
   const mediaPreviewList = document.getElementById('mediaPreviewList');
+  const mediaTypeInput = adminPortfolioForm.querySelector('[name="media_type"]');
+  const videoCoverField = document.getElementById('videoCoverField');
+  const videoCoverInput = document.getElementById('videoCoverFile');
+  const videoCoverPreview = document.getElementById('videoCoverPreview');
   let selectedMediaFiles = [];
+  let selectedCoverFile = null;
+  let selectedCoverIndex = 0;
 
   function isLoggedIn() {
     return !!window.LUDA_SUPABASE?.supabase?.auth?.getSession && !!localStorage.getItem('sb-lrkeaisnawnqlalknwnj-auth-token');
@@ -130,16 +136,35 @@ document.addEventListener('DOMContentLoaded', () => {
       details.className = 'media-preview-details';
       details.innerHTML = `<strong>${file.name}</strong><small>${Math.ceil(file.size / 1024)} KB</small>`;
 
+      const coverLabel = document.createElement('label');
+      coverLabel.className = 'cover-choice';
+      const coverCheckbox = document.createElement('input');
+      coverCheckbox.type = 'checkbox';
+      coverCheckbox.checked = index === selectedCoverIndex;
+      coverCheckbox.setAttribute('aria-label', `Usar ${file.name} como capa`);
+      coverCheckbox.addEventListener('change', () => {
+        if (!coverCheckbox.checked) {
+          coverCheckbox.checked = true;
+          return;
+        }
+        selectedCoverIndex = index;
+        renderMediaPreviews();
+      });
+      const coverText = document.createElement('small');
+      coverText.textContent = 'Capa';
+      coverLabel.append(coverCheckbox, coverText);
+
       const removeButton = document.createElement('button');
       removeButton.type = 'button';
       removeButton.className = 'delete-btn';
       removeButton.textContent = 'Remover';
       removeButton.addEventListener('click', () => {
         selectedMediaFiles.splice(index, 1);
+        if (selectedCoverIndex >= selectedMediaFiles.length) selectedCoverIndex = Math.max(0, selectedMediaFiles.length - 1);
         renderMediaPreviews();
       });
 
-      preview.append(media, details, removeButton);
+      preview.append(media, details, coverLabel, removeButton);
       mediaPreviewList.appendChild(preview);
     });
   }
@@ -147,12 +172,41 @@ document.addEventListener('DOMContentLoaded', () => {
   function addMediaFiles(files) {
     const validFiles = files.filter((file) => file.type.startsWith('image/') || file.type.startsWith('video/'));
     selectedMediaFiles = [...selectedMediaFiles, ...validFiles];
+    if (selectedMediaFiles.length === validFiles.length) selectedCoverIndex = 0;
     renderMediaPreviews();
+  }
+
+  function renderVideoCoverPreview() {
+    videoCoverPreview.innerHTML = '';
+    if (!selectedCoverFile) return;
+    const image = document.createElement('img');
+    image.src = URL.createObjectURL(selectedCoverFile);
+    image.alt = `Capa selecionada: ${selectedCoverFile.name}`;
+    image.className = 'media-preview-thumb';
+    const name = document.createElement('small');
+    name.textContent = selectedCoverFile.name;
+    videoCoverPreview.append(image, name);
+  }
+
+  function syncMediaTypeFields() {
+    const isVideo = mediaTypeInput.value === 'video';
+    videoCoverField.classList.toggle('hidden', !isVideo);
+    if (!isVideo) {
+      selectedCoverFile = null;
+      videoCoverInput.value = '';
+      renderVideoCoverPreview();
+    }
   }
 
   mediaFilesInput.addEventListener('change', () => {
     addMediaFiles(Array.from(mediaFilesInput.files));
     mediaFilesInput.value = '';
+  });
+
+  mediaTypeInput.addEventListener('change', syncMediaTypeFields);
+  videoCoverInput.addEventListener('change', () => {
+    selectedCoverFile = videoCoverInput.files[0] || null;
+    renderVideoCoverPreview();
   });
 
   ['dragenter', 'dragover'].forEach((eventName) => {
@@ -196,14 +250,23 @@ document.addEventListener('DOMContentLoaded', () => {
       adminMessage.textContent = 'Enviando arquivos...';
       adminMessage.className = 'form-message';
       const mediaUrls = await window.LUDA_SUPABASE.uploadPortfolioMedia(selectedMediaFiles);
-      payload.cover_image = mediaUrls[0];
+      payload.cover_image = mediaUrls[selectedCoverIndex] || mediaUrls[0];
       payload.media_urls = mediaUrls;
+
+      if (payload.media_type === 'video' && selectedCoverFile) {
+        const coverUrls = await window.LUDA_SUPABASE.uploadPortfolioMedia([selectedCoverFile]);
+        payload.cover_image = coverUrls[0];
+      }
 
       if (window.LUDA_SUPABASE && typeof window.LUDA_SUPABASE.createPortfolioItem === 'function') {
         await window.LUDA_SUPABASE.createPortfolioItem(payload);
         adminPortfolioForm.reset();
         selectedMediaFiles = [];
+        selectedCoverFile = null;
+        selectedCoverIndex = 0;
         renderMediaPreviews();
+        renderVideoCoverPreview();
+        syncMediaTypeFields();
         adminMessage.textContent = 'Item do portfólio salvo com sucesso.';
         adminMessage.className = 'form-message success';
         await loadPortfolio();
@@ -228,5 +291,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  syncMediaTypeFields();
   syncAuthState();
 });

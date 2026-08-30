@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
         title: item.title || 'Projeto LUDA',
         category: item.category || 'eventos',
         type: item.type || (item.media_type === 'video' ? 'video' : resolvedMedia.length > 1 ? 'album' : 'image'),
+        coverImage: item.coverImage || item.cover_image || resolvedMedia[0],
         media: resolvedMedia,
       };
     });
@@ -177,11 +178,12 @@ document.addEventListener('DOMContentLoaded', () => {
   function createGallery() {
     galleryGrid.innerHTML = activePortfolioItems
       .map((item, index) => {
-        const cover = item.media[0];
+        const cover = item.coverImage || item.media[0];
         const itemType = item.type === 'video' ? 'video' : '';
         const galleryData = JSON.stringify(item.media);
         return `
           <article class="gallery-item reveal stagger-item ${itemType}" data-index="${index}" data-category="${item.category}" data-type="${item.type}" data-title="${item.title}" data-gallery='${galleryData.replace(/'/g, '&apos;')}' style="--index:${index};background-image:url('${cover}')">
+            <span class="gallery-led" aria-hidden="true"></span>
             <div class="gallery-meta">
               <div>
                 <strong>${item.title}</strong>
